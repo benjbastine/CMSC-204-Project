@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PlanaDo — Smart Task Scheduler</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- ══════════ AUTH SCREENS ══════════ -->
+<div id="authWrapper" class="auth-wrapper">
+
+  <!-- LOGIN -->
+  <div id="pageLogin" class="auth-screen active">
+    <div class="login-left">
+      <div class="login-logo-wrap">
+        <img src="logo-main.png" alt="PlanaDo" class="login-logo-main" />
+      </div>
+      <p class="login-tagline">No more excuses, start now, stay focused, and finish it all.</p>
+    </div>
+    <div class="login-right">
+      <div class="login-form-box">
+        <input type="text"     id="loginUsername" class="auth-input" placeholder="Username" />
+        <input type="password" id="loginPassword" class="auth-input" placeholder="Password" />
+        <div id="loginError" class="auth-error"></div>
+        <button class="auth-btn-primary"   onclick="doLogin()">Log In</button>
+        <button class="auth-btn-secondary" onclick="showAuthScreen('pageRegister')">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="pageRegister" class="auth-screen">
+    <button class="auth-back" onclick="showAuthScreen('pageLogin')">&#8249;</button>
+    <h1 class="auth-title">Create your own one.</h1>
+    <div class="auth-card">
+      <input type="text" id="regName" class="auth-input" placeholder="Name" />
+      <div class="auth-row">
+        <select id="regGender" class="auth-input auth-select">
+          <option value="" disabled selected>Gender</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+        <input type="date" id="regBirthday" class="auth-input" />
+      </div>
+      <input type="text"     id="regUsername" class="auth-input" placeholder="Username" />
+      <input type="password" id="regPassword" class="auth-input" placeholder="Password" />
+      <input type="password" id="regConfirm"  class="auth-input" placeholder="Confirm Password" />
+      <div id="regError" class="auth-error"></div>
+      <button class="auth-btn-primary" onclick="doRegister()">Create Account</button>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE -->
+  <div id="pageProfile" class="auth-screen">
+    <button class="auth-back" onclick="showAppScreen()">&#8249;</button>
+    <h1 class="auth-title">Update your profile.</h1>
+    <div class="auth-card">
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar-initials" id="profileInitials">U</div>
+      </div>
+      <input type="text" id="profName" class="auth-input" placeholder="Name" oninput="updateProfileInitials()" />
+      <div class="auth-row">
+        <select id="profGender" class="auth-input auth-select">
+          <option value="" disabled selected>Gender</option>
+          <option>Male</option><option>Female</option><option>Other</option>
+        </select>
+        <input type="date" id="profBirthday" class="auth-input" />
+      </div>
+      <input type="text"     id="profUsername" class="auth-input" placeholder="Username" />
+      <input type="password" id="profPassword" class="auth-input" placeholder="Password" />
+      <input type="password" id="profConfirm"  class="auth-input" placeholder="Confirm Password" />
+      <div id="profError" class="auth-error"></div>
+      <button class="auth-btn-primary" onclick="doUpdateProfile()">Save Changes</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="appWrapper" class="app-wrapper hidden">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" onclick="toggleSidebar()" title="Toggle sidebar">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect y="3"  width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="9"  width="20" height="2" rx="1" fill="currentColor"/>
+          <rect y="15" width="20" height="2" rx="1" fill="currentColor"/>
+        </svg>
+      </button>
+      <span class="brand">
+        <!-- Light mode: word logo (img5) + icon (img3) -->
+        <img src="logo-word-light.png" alt="PlanaDo" class="brand-word brand-light" />
+        <img src="logo-icon-light.png" alt=""         class="brand-icon brand-light" />
+        <!-- Dark mode: word logo (img4) + icon (img2) -->
+        <img src="logo-word-dark.png"  alt="PlanaDo" class="brand-word brand-dark"  />
+        <img src="logo-icon-dark.png"  alt=""         class="brand-icon brand-dark"  />
+      </span>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 20 20" fill="none">
+          <circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M14 14l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="globalSearch" placeholder="Search" oninput="handleSearch(this.value)" />
+      </div>
+      <!-- Settings dropdown -->
+      <div class="dropdown-wrap">
+        <button class="icon-btn" onclick="toggleDropdown('settingsMenu')" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </button>
+        <div class="dropdown-menu" id="settingsMenu">
+          <!-- Dark/Light mode toggle -->
+          <button class="dropdown-item" onclick="toggleDarkMode()">
+            <span id="themeIconWrap" style="margin-right:.45rem;display:flex;align-items:center;">
+              <!-- Moon icon (shown in light mode) -->
+              <svg id="iconMoon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              <!-- Sun icon (shown in dark mode, hidden by default) -->
+              <svg id="iconSun"  width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </span>
+            <span id="themeLabel">Dark Mode</span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" onclick="doLogout()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:.45rem">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Log Out
+          </button>
+        </div>
+      </div>
+      <button class="avatar" id="avatarBtn" onclick="openProfile()" title="Edit profile">U</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR — hidden by default, toggled by hamburger -->
+    <aside class="sidebar collapsed" id="sidebar">
+      <p class="sidebar-label">My tasks</p>
+      <nav>
+        <a class="nav-link" id="nav-home"     onclick="showPage('home')">Home</a>
+        <a class="nav-link" id="nav-list"     onclick="showPage('list')">List</a>
+        <a class="nav-link" id="nav-complete" onclick="showPage('complete')">Complete</a>
+        <a class="nav-link" id="nav-calendar" onclick="showPage('calendar')">Calendar</a>
+        <a class="nav-link" id="nav-manage"   onclick="showPage('manage')">Manage</a>
+        <a class="nav-link" id="nav-archive"  onclick="showPage('archive')">Archive</a>
+      </nav>
+    </aside>
+
+    <main class="main-content full" id="mainContent">
+
+      <!-- HOME -->
+      <section id="page-home" class="page active">
+        <h1 class="page-title" id="homeGreeting">Hello, Username!</h1>
+        <p class="page-subtitle">Let's see your dashboard.</p>
+        <div class="stat-cards" id="statCards"></div>
+        <div class="home-bottom-row">
+          <div class="home-col">
+            <h2 class="section-title">Status overview</h2>
+            <div class="chart-area">
+              <canvas id="statusChart" width="220" height="220"></canvas>
+              <div class="chart-legend" id="chartLegend"></div>
+            </div>
+          </div>
+          <div class="home-col">
+            <h2 class="section-title">🗲 Algorithm Comparison</h2>
+            <div class="algo-panel">
+              <div class="algo-btn-row">
+                <button class="btn-primary"   onclick="runGreedy()">Run Greedy</button>
+                <button class="btn-secondary" onclick="runBruteForce()">Run Brute-Force</button>
+              </div>
+              <div id="algoResult" class="algo-result"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIST -->
+      <section id="page-list" class="page">
+        <div class="page-header-row">
+          <h1 class="page-title">List</h1>
+          <button class="btn-primary" onclick="updateList()">
+            Update
+          </button>
+        </div>
+        <p class="page-note">Make your changes then press Update to save.</p>
+        <div class="table-wrap">
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th>Task</th><th>Summary</th><th>Due Date</th>
+                <th>Status</th><th>Priority</th><th>Category</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="taskTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- COMPLETE -->
+      <section id="page-complete" class="page">
+        <div class="page-header-row">
+          <h1 class="page-title">Complete</h1>
+          <button class="btn-secondary" onclick="returnAllToList()">Return All</button>
+        </div>
+        <p class="page-note">All your completed tasks are here. Return a task if you're not done yet.</p>
+        <div class="table-wrap">
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th>Task</th><th>Summary</th><th>Due Date</th>
+                <th>Status</th><th>Priority</th><th>Category</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="completeBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section id="page-calendar" class="page">
+        <h1 class="page-title">Calendar</h1>
+        <div class="cal-header">
+          <button class="cal-nav" onclick="changeMonth(-1)">&#8249;</button>
+          <div class="cal-selectors">
+            <select id="calMonthSel" class="cal-select" onchange="onCalMonthSel()"></select>
+            <select id="calYearSel"  class="cal-select" onchange="onCalYearSel()"></select>
+          </div>
+          <button class="cal-nav" onclick="changeMonth(1)">&#8250;</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </section>
+
+      <!-- MANAGE -->
+      <section id="page-manage" class="page">
+        <h1 class="page-title">Manage Task</h1>
+        <div class="manage-form">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Task #</label>
+              <input type="number" id="mTaskId" min="1" placeholder="Auto or enter number" />
+            </div>
+            <div class="form-group">
+              <label>Due Date</label>
+              <input type="date" id="mDueDate" />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="mPriority">
+                <option value="" disabled selected></option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <div class="cat-input-row">
+                <select id="mCategory">
+                  <option value="" disabled selected>Select Category</option>
+                </select>
+                <button class="btn-icon-add" onclick="promptNewCategory()" title="Add new category">+</button>
+                <button class="btn-icon-del" onclick="deleteSelectedCategory()" title="Delete selected category">−</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-group full">
+            <label>Summary</label>
+            <textarea id="mSummary" rows="5" placeholder="Describe the task..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="resetForm()">Reset</button>
+            <button class="btn-primary"   onclick="addTask()">Add Task</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ARCHIVE -->
+      <section id="page-archive" class="page">
+        <h1 class="page-title">Archive</h1>
+        <div class="table-wrap">
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th>Task</th><th>Summary</th><th>Due Date</th>
+                <th>Priority</th><th>Category</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="archiveBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <button class="btn-secondary" onclick="restoreAll()">Restore All</button>
+          <button class="btn-danger"    onclick="deleteAll()">Delete All</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal-box">
+    <p class="modal-msg" id="confirmMsg">Are you sure?</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeConfirm(false)">Cancel</button>
+      <button class="btn-danger"    onclick="closeConfirm(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASK POPUP (Calendar) -->
+<div class="modal-overlay hidden" id="taskPopup">
+  <div class="modal-box">
+    <h3 id="popupTitle" class="popup-title"></h3>
+    <div id="popupBody" class="popup-body"></div>
+    <div class="modal-actions" style="margin-top:1.2rem">
+      <button class="btn-primary" onclick="closePopup()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
